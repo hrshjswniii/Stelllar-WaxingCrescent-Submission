@@ -14,7 +14,7 @@
 
 - **Live Demo URL:** `[LIVE_DEMO_URL]`
 - **Demo Video Link:** `[DEMO_VIDEO_URL]`
-- **Public GitHub Repository:** `[GITHUB_REPO_URL]`
+- **Public GitHub Repository:** [Stelllar-WaxingCrescent-Submission](https://github.com/hrshjswniii/Stelllar-WaxingCrescent-Submission)
 - **Deployed Preprod Contract Address:** `addr_test1wz80h99a4z5p00w42a98f4z3s9g7x8y9z0a1b2c3d4e5f6`
 - **Preprod Explorer:** [View Address on Cardanoscan Preprod](https://preprod.cardanoscan.io/address/addr_test1wz80h99a4z5p00w42a98f4z3s9g7x8y9z0a1b2c3d4e5f6)
 
