@@ -1,18 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { X, Wallet, CheckCircle2, Copy, LogOut, ExternalLink, ShieldAlert, Sparkles } from 'lucide-react';
+import { X, Wallet, CheckCircle2, Copy, LogOut, ExternalLink, ShieldAlert, Sparkles, Loader2, RefreshCw } from 'lucide-react';
 import { laceWalletService, MOCK_LACE_WALLET } from '../services/laceWallet';
 import { PREPROD_CONTRACT_CONFIG } from '../services/preprodContract';
 
 export default function LaceWalletModal({ isOpen, onClose }) {
   const [wallet, setWallet] = useState(null);
   const [connecting, setConnecting] = useState(false);
+  const [statusNotice, setStatusNotice] = useState(null);
   const [copied, setCopied] = useState(false);
   const [availableWallets, setAvailableWallets] = useState([]);
 
+  const refreshWallets = () => {
+    setWallet(laceWalletService.getWalletInfo());
+    setAvailableWallets(laceWalletService.getAvailableWallets());
+  };
+
   useEffect(() => {
     if (isOpen) {
-      setWallet(laceWalletService.getWalletInfo());
-      setAvailableWallets(laceWalletService.getAvailableWallets());
+      refreshWallets();
+      // Brief retry loop in case window.cardano initializes asynchronously
+      const timer = setTimeout(() => refreshWallets(), 500);
+      return () => clearTimeout(timer);
     }
   }, [isOpen]);
 
@@ -20,14 +28,24 @@ export default function LaceWalletModal({ isOpen, onClose }) {
 
   const handleConnect = async (walletId, forceMock = false) => {
     setConnecting(true);
-    const res = await laceWalletService.connect(walletId, forceMock);
-    setWallet(res.wallet);
-    setConnecting(false);
+    setStatusNotice(null);
+    try {
+      const res = await laceWalletService.connect(walletId, forceMock);
+      setWallet(res.wallet);
+      if (res.notice) {
+        setStatusNotice(res.notice);
+      }
+    } catch (err) {
+      setStatusNotice(`Connection error: ${err.message || 'Failed to connect'}`);
+    } finally {
+      setConnecting(false);
+    }
   };
 
   const handleDisconnect = () => {
     laceWalletService.disconnect();
     setWallet(null);
+    setStatusNotice(null);
   };
 
   const copyAddress = () => {
@@ -107,6 +125,12 @@ export default function LaceWalletModal({ isOpen, onClose }) {
                 </div>
               </div>
 
+              {statusNotice && (
+                <div className="p-3 rounded-lg bg-sky-500/10 border border-sky-500/20 text-sky-300 text-xs font-mono">
+                  {statusNotice}
+                </div>
+              )}
+
               {/* Action Buttons */}
               <div className="flex gap-2">
                 <a 
@@ -130,30 +154,71 @@ export default function LaceWalletModal({ isOpen, onClose }) {
           ) : (
             /* Disconnected State: Select Provider */
             <div className="space-y-3">
-              <p className="text-xs text-slate-300">
-                Connect your Lace Wallet browser extension to interact with the ZK Circuit on Cardano Preprod Testnet.
-              </p>
+              <div className="flex items-center justify-between text-xs text-slate-300">
+                <span>Connect your Lace Wallet browser extension to interact with Cardano Preprod Testnet.</span>
+                <button 
+                  onClick={refreshWallets}
+                  className="p-1 text-slate-400 hover:text-purple-300 transition"
+                  title="Rescan Wallets"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                </button>
+              </div>
 
               {/* Extension Options */}
               <div className="space-y-2">
-                <button
-                  onClick={() => handleConnect('lace')}
-                  disabled={connecting}
-                  className="w-full flex items-center justify-between p-3.5 rounded-xl bg-purple-950/40 hover:bg-purple-900/50 border border-purple-500/30 hover:border-purple-500/60 transition group text-left"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-purple-600/20 border border-purple-500/40 flex items-center justify-center text-lg">
-                      🌙
+                {/* Dynamically list detected extensions if available */}
+                {availableWallets.length > 0 ? (
+                  availableWallets.map(w => (
+                    <button
+                      key={w.id}
+                      onClick={() => handleConnect(w.id)}
+                      disabled={connecting}
+                      className="w-full flex items-center justify-between p-3.5 rounded-xl bg-purple-950/40 hover:bg-purple-900/50 border border-purple-500/40 hover:border-purple-500/70 transition group text-left"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-lg bg-purple-600/20 border border-purple-500/40 flex items-center justify-center text-lg">
+                          🌙
+                        </div>
+                        <div>
+                          <div className="text-sm font-semibold text-purple-100 group-hover:text-white flex items-center gap-2">
+                            <span>{w.name}</span>
+                            <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/30">Installed</span>
+                          </div>
+                          <div className="text-xs text-purple-300/70">CIP-30 Cardano Provider (v{w.apiVersion})</div>
+                        </div>
+                      </div>
+                      {connecting ? (
+                        <Loader2 className="w-4 h-4 animate-spin text-purple-400" />
+                      ) : (
+                        <span className="text-xs font-mono text-purple-400 bg-purple-500/20 px-2 py-1 rounded">Connect</span>
+                      )}
+                    </button>
+                  ))
+                ) : (
+                  <button
+                    onClick={() => handleConnect('lace')}
+                    disabled={connecting}
+                    className="w-full flex items-center justify-between p-3.5 rounded-xl bg-purple-950/40 hover:bg-purple-900/50 border border-purple-500/30 hover:border-purple-500/60 transition group text-left"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-purple-600/20 border border-purple-500/40 flex items-center justify-center text-lg">
+                        🌙
+                      </div>
+                      <div>
+                        <div className="text-sm font-semibold text-purple-100 group-hover:text-white">Lace Wallet (Cardano / Midnight)</div>
+                        <div className="text-xs text-purple-300/70">Official IOG Browser Extension</div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="text-sm font-semibold text-purple-100 group-hover:text-white">Lace Wallet (Cardano / Midnight)</div>
-                      <div className="text-xs text-purple-300/70">Official IOG Browser Extension</div>
-                    </div>
-                  </div>
-                  <span className="text-xs font-mono text-purple-400 bg-purple-500/20 px-2 py-1 rounded">CIP-30</span>
-                </button>
+                    {connecting ? (
+                      <Loader2 className="w-4 h-4 animate-spin text-purple-400" />
+                    ) : (
+                      <span className="text-xs font-mono text-purple-400 bg-purple-500/20 px-2 py-1 rounded">CIP-30</span>
+                    )}
+                  </button>
+                )}
 
-                {/* Mock Simulator Button for Judges */}
+                {/* Preprod Simulator Option */}
                 <button
                   onClick={() => handleConnect('mock', true)}
                   disabled={connecting}
@@ -171,6 +236,12 @@ export default function LaceWalletModal({ isOpen, onClose }) {
                   <span className="text-xs font-mono text-sky-400 bg-sky-500/20 px-2 py-1 rounded">Preprod</span>
                 </button>
               </div>
+
+              {statusNotice && (
+                <div className="p-3 rounded-lg bg-purple-950/50 border border-purple-500/30 text-purple-200 text-xs font-mono">
+                  {statusNotice}
+                </div>
+              )}
 
               <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs flex gap-2 items-start mt-2">
                 <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
