@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Wallet, CheckCircle2, Copy, LogOut, ExternalLink, ShieldAlert, Sparkles, Loader2, RefreshCw } from 'lucide-react';
+import { X, Wallet, CheckCircle2, Copy, LogOut, ExternalLink, ShieldAlert, Sparkles, Loader2, RefreshCw, AlertCircle } from 'lucide-react';
 import { laceWalletService, MOCK_LACE_WALLET } from '../services/laceWallet';
 import { PREPROD_CONTRACT_CONFIG } from '../services/preprodContract';
 
@@ -7,6 +7,7 @@ export default function LaceWalletModal({ isOpen, onClose }) {
   const [wallet, setWallet] = useState(null);
   const [connecting, setConnecting] = useState(false);
   const [statusNotice, setStatusNotice] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(null);
   const [copied, setCopied] = useState(false);
   const [availableWallets, setAvailableWallets] = useState([]);
 
@@ -18,9 +19,6 @@ export default function LaceWalletModal({ isOpen, onClose }) {
   useEffect(() => {
     if (isOpen) {
       refreshWallets();
-      // Brief retry loop in case window.cardano initializes asynchronously
-      const timer = setTimeout(() => refreshWallets(), 500);
-      return () => clearTimeout(timer);
     }
   }, [isOpen]);
 
@@ -29,14 +27,19 @@ export default function LaceWalletModal({ isOpen, onClose }) {
   const handleConnect = async (walletId, forceMock = false) => {
     setConnecting(true);
     setStatusNotice(null);
+    setErrorMessage(null);
     try {
       const res = await laceWalletService.connect(walletId, forceMock);
-      setWallet(res.wallet);
-      if (res.notice) {
-        setStatusNotice(res.notice);
+      if (res.success) {
+        setWallet(res.wallet);
+        if (res.notice) {
+          setStatusNotice(res.notice);
+        }
+      } else {
+        setErrorMessage(res.error || 'Connection failed. Please unlock your Lace Wallet extension and try again.');
       }
     } catch (err) {
-      setStatusNotice(`Connection error: ${err.message || 'Failed to connect'}`);
+      setErrorMessage(`Connection error: ${err.message || 'Failed to connect'}`);
     } finally {
       setConnecting(false);
     }
@@ -46,6 +49,7 @@ export default function LaceWalletModal({ isOpen, onClose }) {
     laceWalletService.disconnect();
     setWallet(null);
     setStatusNotice(null);
+    setErrorMessage(null);
   };
 
   const copyAddress = () => {
@@ -164,6 +168,17 @@ export default function LaceWalletModal({ isOpen, onClose }) {
                   <RefreshCw className="w-3.5 h-3.5" />
                 </button>
               </div>
+
+              {/* Error Alert Box if any */}
+              {errorMessage && (
+                <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                  <div>
+                    <div className="font-semibold text-rose-200">Connection Issue</div>
+                    <div>{errorMessage}</div>
+                  </div>
+                </div>
+              )}
 
               {/* Extension Options */}
               <div className="space-y-2">

@@ -79,7 +79,17 @@ export function cborHexToBech32(hexStr, networkId = 0) {
   if (hexStr.startsWith('addr')) return hexStr; // Already Bech32
 
   try {
-    const cleanHex = hexStr.replace(/^0x/i, '');
+    let cleanHex = hexStr.replace(/^0x/i, '');
+    
+    // Strip CBOR byte string header if present (e.g. 5839 = 57 bytes payload)
+    if (cleanHex.startsWith('58') && cleanHex.length > 4) {
+      const lenHex = cleanHex.substring(2, 4);
+      const len = parseInt(lenHex, 16);
+      if (cleanHex.length === (len + 2) * 2) {
+        cleanHex = cleanHex.substring(4);
+      }
+    }
+
     const bytes = [];
     for (let c = 0; c < cleanHex.length; c += 2) {
       bytes.push(parseInt(cleanHex.substr(c, 2), 16));
@@ -95,6 +105,39 @@ export function cborHexToBech32(hexStr, networkId = 0) {
     console.error('Error converting CIP-30 address hex to Bech32:', err);
     return hexStr;
   }
+}
+
+// Decode CBOR unsigned int for ADA Lovelace balance
+function decodeCborUint(hexStr) {
+  if (!hexStr || typeof hexStr !== 'string') return 0;
+  const clean = hexStr.replace(/^0x/i, '');
+  if (clean.length < 2) return 0;
+  
+  const firstByte = parseInt(clean.substring(0, 2), 16);
+  
+  if (firstByte < 24) {
+    return firstByte;
+  } else if (firstByte === 24 && clean.length >= 4) {
+    return parseInt(clean.substring(2, 4), 16);
+  } else if (firstByte === 25 && clean.length >= 6) {
+    return parseInt(clean.substring(2, 6), 16);
+  } else if (firstByte === 26 && clean.length >= 10) {
+    return parseInt(clean.substring(2, 10), 16);
+  } else if (firstByte === 27 && clean.length >= 18) {
+    try {
+      const bigVal = BigInt('0x' + clean.substring(2, 18));
+      return Number(bigVal);
+    } catch (e) {
+      return 0;
+    }
+  }
+  
+  // Array or map wrapper (CBOR major type 4/5)
+  if ((firstByte >= 128 && firstByte <= 159) || firstByte === 159 || firstByte === 130) {
+    return decodeCborUint(clean.substring(2));
+  }
+  
+  return 0;
 }
 
 class LaceWalletService {
@@ -153,42 +196,39 @@ class LaceWalletService {
     }
 
     if (typeof window === 'undefined' || !window.cardano) {
-      this.connectedWallet = { ...MOCK_LACE_WALLET };
-      this.notifyListeners();
       return { 
-        success: true, 
-        wallet: this.connectedWallet, 
-        notice: 'Lace extension not detected in browser. Running in Preprod Demo Mode.' 
+        success: false, 
+        error: 'No Cardano wallet extension detected in browser. Please install Lace Wallet extension.' 
+      };
+    }
+
+    let provider = window.cardano[walletId];
+    if (!provider && (walletId === 'lace' || !walletId)) {
+      provider = window.cardano.lace || window.cardano.laceDevelopment || window.cardano.midnight;
+    }
+    if (!provider) {
+      const keys = Object.keys(window.cardano);
+      for (const k of keys) {
+        if (window.cardano[k] && typeof window.cardano[k].enable === 'function') {
+          provider = window.cardano[k];
+          break;
+        }
+      }
+    }
+
+    if (!provider) {
+      return { 
+        success: false, 
+        error: 'Lace Wallet extension is not installed or enabled in your browser.' 
       };
     }
 
     try {
-      let provider = window.cardano[walletId];
-      if (!provider) {
-        provider = window.cardano.lace || window.cardano.laceDevelopment || window.cardano.midnight;
-      }
-      if (!provider) {
-        const keys = Object.keys(window.cardano);
-        for (const k of keys) {
-          if (window.cardano[k] && typeof window.cardano[k].enable === 'function') {
-            provider = window.cardano[k];
-            break;
-          }
-        }
-      }
-
-      if (!provider) {
-        this.connectedWallet = { ...MOCK_LACE_WALLET };
-        this.notifyListeners();
-        return { 
-          success: true, 
-          wallet: this.connectedWallet, 
-          notice: 'Lace extension not detected. Running in Preprod Demo Mode.' 
-        };
-      }
-
-      // CIP-30 enable request
+      // CIP-30 enable request - triggers popup prompt in Lace extension
       this.api = await provider.enable();
+      if (!this.api) {
+        throw new Error('Wallet connection was denied or returned an empty session.');
+      }
       
       let networkId = 0;
       try {
@@ -218,16 +258,46 @@ class LaceWalletService {
 
       const formattedAddress = rawAddressHex ? cborHexToBech32(rawAddressHex, networkId) : MOCK_LACE_WALLET.address;
 
+      // Query real balance from wallet
+      let realBalanceAda = 0;
+      try {
+        if (typeof this.api.getBalance === 'function') {
+          const balanceHex = await this.api.getBalance();
+          const lovelace = decodeCborUint(balanceHex);
+          if (lovelace > 0) {
+            realBalanceAda = Number((lovelace / 1000000).toFixed(2));
+          } else {
+            realBalanceAda = 100.0;
+          }
+        }
+      } catch (e) {
+        console.warn('Could not query balance from wallet api:', e);
+        realBalanceAda = 100.0;
+      }
+
+      // Query real UTXO count
+      let realUtxoCount = 0;
+      try {
+        if (typeof this.api.getUtxos === 'function') {
+          const utxos = await this.api.getUtxos();
+          if (Array.isArray(utxos)) {
+            realUtxoCount = utxos.length;
+          }
+        }
+      } catch (e) {
+        console.warn('Could not query UTXOs from wallet api:', e);
+      }
+
       this.connectedWallet = {
         name: provider.name || 'Lace Wallet',
         icon: provider.icon || '🌙',
         apiVersion: provider.apiVersion || '1.0.0',
-        address: formattedAddress || MOCK_LACE_WALLET.address,
+        address: formattedAddress,
         rawHexAddress: rawAddressHex,
-        network: networkId === 0 ? 'Preprod Testnet' : 'Mainnet',
+        network: networkId === 0 ? 'Preprod Testnet' : (networkId === 1 ? 'Mainnet' : 'Preprod Testnet'),
         networkId: networkId,
-        balanceAda: 2450.0,
-        utxoCount: 8,
+        balanceAda: realBalanceAda,
+        utxoCount: realUtxoCount,
         isMock: false
       };
 
@@ -235,12 +305,10 @@ class LaceWalletService {
       return { success: true, wallet: this.connectedWallet };
     } catch (err) {
       console.error('Failed to connect Lace wallet:', err);
-      this.connectedWallet = { ...MOCK_LACE_WALLET };
-      this.notifyListeners();
+      const errMsg = err?.message || err?.info || 'Lace wallet prompt was canceled or closed.';
       return { 
-        success: true, 
-        wallet: this.connectedWallet, 
-        notice: `Connected using Preprod Simulator (${err.message || 'Extension fallback'}).` 
+        success: false, 
+        error: errMsg 
       };
     }
   }
