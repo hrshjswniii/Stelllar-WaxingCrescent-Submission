@@ -13,8 +13,10 @@
 ## 📹 Demo Video & Submission Links
 
 - 🎬 **Demo Video Link (Wallet Connect + ZK Circuit Call):**  
-  👉 **`[INSERT_YOUR_DEMO_VIDEO_URL_HERE]`**  
-  *(Replace `[INSERT_YOUR_DEMO_VIDEO_URL_HERE]` with your YouTube, Loom, or Google Drive video link showcase)*
+
+  👉 https://github.com/user-attachments/assets/42b2f657-daec-41ae-b918-7dbe15d99cd4
+
+
 
 - 🌐 **Live Web Application:** [https://astraea-zk-engine.vercel.app](https://astraea-zk-engine.vercel.app)
 - 🐙 **Public GitHub Repository:** [Stelllar-WaxingCrescent-Submission](https://github.com/hrshjswniii/Stelllar-WaxingCrescent-Submission)
