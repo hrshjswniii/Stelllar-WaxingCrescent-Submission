@@ -9,8 +9,10 @@ export const PREPROD_CONTRACT_CONFIG = {
   networkMagic: 1, // Preprod Testnet Magic
   scriptHash: "c36d2e98710fa5c48b0a99c9b1e28d086a421b8f8899a12c4e5f0a7b",
   address: "addr_test1wz80h99a4z5p00w42a98f4z3s9g7x8y9z0a1b2c3d4e5f6",
+  deployerAddress: "addr_test1qq05l29v4ny6askd448j9qdrww6waf9xw5t49tffeyrsy7hg4xfgdejc93qktml5n93jda25u2wzlayklr240x289fhs0zgjyg",
   compiler: "Aiken v1.1.9",
   explorerUrl: "https://preprod.cardanoscan.io/address/addr_test1wz80h99a4z5p00w42a98f4z3s9g7x8y9z0a1b2c3d4e5f6",
+  deployerExplorerUrl: "https://preprod.cardanoscan.io/address/addr_test1qq05l29v4ny6askd448j9qdrww6waf9xw5t49tffeyrsy7hg4xfgdejc93qktml5n93jda25u2wzlayklr240x289fhs0zgjyg",
   txExplorerPrefix: "https://preprod.cardanoscan.io/transaction/"
 };
 
@@ -52,7 +54,7 @@ class PreprodContractService {
       timestamp: new Date().toISOString(),
       proofId: proofResult.proofId || "0x99a1b2c3d4e5f678",
       commitmentHash: proofResult.publicSignals ? proofResult.publicSignals[1] : "0x...",
-      submitter: walletAddress || "addr_test1wz80h99...",
+      submitter: walletAddress || PREPROD_CONTRACT_CONFIG.deployerAddress,
       status: "VERIFIED_ON_CHAIN",
       feeAda: "0.1824",
       explorerUrl: `${PREPROD_CONTRACT_CONFIG.txExplorerPrefix}${txHash}`
