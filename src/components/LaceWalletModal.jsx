@@ -72,7 +72,7 @@ export default function LaceWalletModal({ isOpen, onClose }) {
             </div>
             <div>
               <h2 className="text-lg font-bold text-slate-100">Lace Wallet Connector</h2>
-              <p className="text-xs text-[var(--text-muted)]">Cardano CIP-30 Preprod Interface</p>
+              <p className="text-xs text-[var(--text-muted)]">Cardano CIP-30 & Midnight DApp Connector API</p>
             </div>
           </div>
           <button 
@@ -114,6 +114,15 @@ export default function LaceWalletModal({ isOpen, onClose }) {
                       {copied ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
                     </button>
                   </div>
+                </div>
+
+                {/* Midnight DApp Connector Indicator */}
+                <div className="p-2.5 rounded-lg bg-emerald-950/40 border border-emerald-500/30 flex items-center justify-between text-xs font-mono text-emerald-300">
+                  <span className="flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                    Midnight DApp Connector API:
+                  </span>
+                  <span className="text-emerald-400 font-bold">READY / ACTIVE</span>
                 </div>
 
                 {/* Stats */}

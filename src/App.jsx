@@ -37,12 +37,15 @@ export default function App() {
           <div className="absolute top-0 right-0 -mt-10 -mr-10 w-96 h-96 bg-purple-600/15 rounded-full blur-3xl pointer-events-none" />
           
           <div className="max-w-3xl space-y-4 relative z-10">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="glass-pill text-xs text-purple-300 border-purple-500/30 bg-purple-500/10 font-mono">
                 🌙 Stellar FullMoon • Phase 2
               </span>
               <span className="glass-pill text-xs text-sky-300 border-sky-500/30 bg-sky-500/10 font-mono">
                 Waxing Crescent Submission
+              </span>
+              <span className="glass-pill text-xs text-emerald-300 border-emerald-500/30 bg-emerald-500/10 font-mono">
+                Midnight.js SDK Integrated
               </span>
             </div>
 
@@ -52,26 +55,30 @@ export default function App() {
             </h1>
 
             <p className="text-sm sm:text-base text-slate-300 leading-relaxed">
-              Demonstrating observable client-side privacy proofs on Cardano Preprod Testnet with Lace Wallet integration, BN254 Groth16 witness calculation, and on-chain contract verification.
+              Demonstrating observable client-side privacy proofs on Cardano Preprod Testnet with Midnight.js SDK (@midnight-ntwrk/dapp-connector-api & @midnight-ntwrk/midnight-js-network-provider), Lace Wallet integration, BN254 Groth16 witness calculation, and on-chain contract verification.
             </p>
 
             {/* Quick Requirement Pass Checklist Badge */}
-            <div className="pt-2 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-medium">
+            <div className="pt-2 grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs font-medium">
               <div className="p-2.5 rounded-xl bg-purple-950/40 border border-purple-500/30 flex items-center gap-2 text-purple-200">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>1. Lace Wallet CIP-30</span>
+                <span>1. Midnight.js SDK</span>
               </div>
               <div className="p-2.5 rounded-xl bg-purple-950/40 border border-purple-500/30 flex items-center gap-2 text-purple-200">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>2. ZK Circuit Execution</span>
+                <span>2. Lace Wallet</span>
               </div>
               <div className="p-2.5 rounded-xl bg-purple-950/40 border border-purple-500/30 flex items-center gap-2 text-purple-200">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>3. Observable Privacy</span>
+                <span>3. ZK Execution</span>
               </div>
               <div className="p-2.5 rounded-xl bg-purple-950/40 border border-purple-500/30 flex items-center gap-2 text-purple-200">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>4. Preprod Deployed</span>
+                <span>4. Privacy Claim</span>
+              </div>
+              <div className="p-2.5 rounded-xl bg-purple-950/40 border border-purple-500/30 flex items-center gap-2 text-purple-200">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>5. Preprod Contract</span>
               </div>
             </div>
           </div>

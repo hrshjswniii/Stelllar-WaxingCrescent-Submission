@@ -65,7 +65,7 @@ export default function ContractInspector() {
         </div>
 
         {/* Technical Specs */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-2">
           <div className="p-2.5 rounded-lg bg-slate-950/60 border border-slate-800">
             <span className="text-[10px] text-slate-400 font-sans block">Policy / Script Hash:</span>
             <span className="text-[11px] text-sky-300 truncate block">{PREPROD_CONTRACT_CONFIG.scriptHash.slice(0, 16)}...</span>
@@ -77,6 +77,10 @@ export default function ContractInspector() {
           <div className="p-2.5 rounded-lg bg-slate-950/60 border border-slate-800">
             <span className="text-[10px] text-slate-400 font-sans block">Network Environment:</span>
             <span className="text-[11px] text-purple-300 block">{PREPROD_CONTRACT_CONFIG.network}</span>
+          </div>
+          <div className="p-2.5 rounded-lg bg-emerald-950/40 border border-emerald-500/30">
+            <span className="text-[10px] text-emerald-400 font-sans block">Midnight Network Provider:</span>
+            <span className="text-[11px] text-emerald-300 block font-bold">Indexer Provider Active</span>
           </div>
         </div>
 

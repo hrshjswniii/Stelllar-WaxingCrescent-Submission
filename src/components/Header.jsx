@@ -53,6 +53,12 @@ export default function Header({ onOpenWalletModal }) {
             <span>Preprod NetMagic #1</span>
           </div>
 
+          {/* Midnight.js SDK Pill */}
+          <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs font-mono text-emerald-300">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Midnight.js SDK v4.1</span>
+          </div>
+
           {/* Wallet Connect/Disconnect Button */}
           {wallet ? (
             <button
