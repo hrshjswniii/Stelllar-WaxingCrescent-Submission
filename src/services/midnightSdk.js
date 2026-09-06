@@ -6,7 +6,7 @@
 import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-public-data-provider';
 import { httpClientProofProvider } from '@midnight-ntwrk/midnight-js-http-client-proof-provider';
 import { levelPrivateStateProvider } from '@midnight-ntwrk/midnight-js-level-private-state-provider';
-import { fetchZkConfigProvider } from '@midnight-ntwrk/midnight-js-fetch-zk-config-provider';
+import { FetchZkConfigProvider } from '@midnight-ntwrk/midnight-js-fetch-zk-config-provider';
 
 // Midnight Preprod Network Configuration
 export const MIDNIGHT_PREPROD_CONFIG = {
@@ -53,7 +53,7 @@ class MidnightSdkService {
       });
 
       // 4. Initialize ZK Config Provider for Proving & Verifying Keys
-      this.zkConfigProvider = fetchZkConfigProvider(MIDNIGHT_PREPROD_CONFIG.zkConfigUri);
+      this.zkConfigProvider = new FetchZkConfigProvider(MIDNIGHT_PREPROD_CONFIG.zkConfigUri);
 
       this.isInitialized = true;
       console.log('Midnight.js SDK initialized successfully with Preprod providers.');
