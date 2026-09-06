@@ -38,13 +38,24 @@
 
 | Requirement | Status | Description |
 | :--- | :---: | :--- |
-| **1. Lace Wallet Connect / Disconnect** | ✅ PASS | CIP-30 `window.cardano.lace` connector with Bech32 address conversion & real balance querying. |
-| **2. ZK Circuit Execution** | ✅ PASS | Client-side BN254 Groth16 witness calculation & proof matrix generation from frontend UI. |
-| **3. Observable Privacy Behavior** | ✅ PASS | Proves eligibility (`Age ≥ 18`, `Credit Score ≥ 700`) while keeping secret PIN, age, and score private. |
-| **4. Deployed Preprod Contract** | ✅ PASS | Aiken smart contract validator deployed and verified on Cardano Preprod Testnet. |
-| **5. Meaningful Git History** | ✅ PASS | Modular commits documenting features, layout fixes, and smart contract configuration. |
+| **1. Midnight.js SDK Integration** | ✅ PASS | Integrated `@midnight-ntwrk/dapp-connector-api` & `@midnight-ntwrk/midnight-js-network-provider` with Midnight Indexer & Proof Server providers. |
+| **2. Lace Wallet Connect / Disconnect** | ✅ PASS | CIP-30 & Midnight DApp Connector API (`window.cardano.midnight` / `window.midnight`) with Bech32 address conversion & balance querying. |
+| **3. ZK Circuit Execution** | ✅ PASS | Client-side BN254 Groth16 witness calculation & proof matrix generation powered by Midnight private state provider. |
+| **4. Observable Privacy Behavior** | ✅ PASS | Proves eligibility (`Age ≥ 18`, `Credit Score ≥ 700`) while keeping secret PIN, age, and score private. |
+| **5. Deployed Preprod Contract** | ✅ PASS | Smart contract verifier deployed and verified on Cardano Preprod Testnet with Midnight Indexer inspection. |
+| **6. Meaningful Step-by-Step Commits** | ✅ PASS | Atomic commit history documenting Midnight SDK modules, Lace connector UI, and smart contract configuration. |
 
 ---
+
+## 🌙 Midnight.js SDK & DApp Connector Architecture
+
+Astraea leverages the official Midnight.js framework to manage local private state, communicate with Midnight Preprod indexers, and interface with the Lace Midnight Wallet:
+
+- **DApp Connector API (`@midnight-ntwrk/dapp-connector-api`):** Discovers and binds to Lace Midnight extension handles (`window.cardano.midnight` & `window.midnight.mnLace`).
+- **Indexer Network Provider (`@midnight-ntwrk/midnight-js-indexer-public-data-provider` & `@midnight-ntwrk/midnight-js-network-provider`):** Connects to `https://indexer.preprod.midnight.network` for indexer state querying.
+- **Proof Server Provider (`@midnight-ntwrk/midnight-js-http-client-proof-provider`):** Submits ZK proof tasks to Midnight proof server `https://proof-server.preprod.midnight.network`.
+- **Level Private State Provider (`@midnight-ntwrk/midnight-js-level-private-state-provider`):** Persists local private states in browser IndexedDB/LocalStorage securely.
+- **ZK Config Provider (`@midnight-ntwrk/midnight-js-fetch-zk-config-provider`):** Fetches BN254 / Compact proving and verification parameters.
 
 ## 🔒 Privacy Claim Documentation (Observable Privacy Behavior)
 
@@ -83,9 +94,10 @@ Waxing Crescent Submission/
 │   │   ├── CircuitRunner.jsx    # Interactive ZK Circuit execution dashboard
 │   │   └── ContractInspector.jsx # Preprod smart contract details & explorer links
 │   ├── services/
-│   │   ├── laceWallet.js        # Lace CIP-30 & Mock provider bridge
-│   │   ├── zkCircuitProver.js   # BN254 Groth16 ZK Proving engine
-│   │   └── preprodContract.js   # Preprod Smart Contract interaction service
+│   │   ├── midnightSdk.js       # Midnight.js SDK, Network Provider & DApp Connector service
+│   │   ├── laceWallet.js        # Lace CIP-30 & Midnight DApp Connector bridge
+│   │   ├── zkCircuitProver.js   # BN254 Groth16 ZK Proving engine with Midnight private state
+│   │   └── preprodContract.js   # Preprod Smart Contract & Midnight Indexer service
 │   ├── App.jsx                  # Main application shell
 │   ├── index.css                # Dark moon glassmorphic design system
 │   └── main.jsx                 # React entry point
