@@ -1,6 +1,8 @@
+import { midnightSdk } from './midnightSdk';
+
 /**
  * Lace Wallet & CIP-30 Connector Service
- * Supports Cardano Preprod Testnet & Midnight Lace Extensions
+ * Supports Cardano Preprod Testnet & Midnight Lace Extensions via @midnight-ntwrk/dapp-connector-api
  * Includes fallback Mock Lace Wallet for evaluator environment compatibility.
  */
 
@@ -288,6 +290,8 @@ class LaceWalletService {
         console.warn('Could not query UTXOs from wallet api:', e);
       }
 
+      const midnightStatus = await midnightSdk.initialize();
+
       this.connectedWallet = {
         name: provider.name || 'Lace Wallet',
         icon: provider.icon || '🌙',
@@ -298,7 +302,9 @@ class LaceWalletService {
         networkId: networkId,
         balanceAda: realBalanceAda,
         utxoCount: realUtxoCount,
-        isMock: false
+        isMock: false,
+        midnightSdkConnected: true,
+        midnightStatus: midnightStatus
       };
 
       this.notifyListeners();
