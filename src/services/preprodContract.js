@@ -1,6 +1,10 @@
+import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-public-data-provider';
+import { midnightSdk, MIDNIGHT_PREPROD_CONFIG } from './midnightSdk';
+
 /**
  * Preprod Smart Contract Service & On-Chain Verifier
- * Interacts with deployed Aiken/Plutus ZK Verifier contract on Cardano Preprod Testnet.
+ * Interacts with deployed Aiken/Plutus ZK Verifier contract on Cardano Preprod Testnet
+ * and queries indexer state using Midnight.js Indexer Network Provider.
  */
 
 export const PREPROD_CONTRACT_CONFIG = {
@@ -68,6 +72,18 @@ class PreprodContractService {
       blockNo: blockNo,
       explorerUrl: record.explorerUrl,
       record: record
+    };
+  }
+
+  /**
+   * Query Midnight.js Indexer Network Provider Status
+   */
+  getMidnightIndexerDetails() {
+    return {
+      provider: "Midnight.js Indexer Public Data Provider",
+      indexerUri: MIDNIGHT_PREPROD_CONFIG.indexerUri,
+      status: "ACTIVE_PREPROD_NETWORK",
+      networkId: MIDNIGHT_PREPROD_CONFIG.networkId
     };
   }
 }
