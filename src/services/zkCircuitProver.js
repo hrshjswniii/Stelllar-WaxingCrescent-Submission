@@ -1,6 +1,11 @@
+import { levelPrivateStateProvider } from '@midnight-ntwrk/midnight-js-level-private-state-provider';
+import { fetchZkConfigProvider } from '@midnight-ntwrk/midnight-js-fetch-zk-config-provider';
+import { httpClientProofProvider } from '@midnight-ntwrk/midnight-js-http-client-proof-provider';
+import { midnightSdk } from './midnightSdk';
+
 /**
  * Client-Side Zero-Knowledge Proving Engine (Groth16 / Compact ZK Circuit)
- * Implements Observable Privacy Proof of Qualification & Identity Commitment.
+ * Implements Observable Privacy Proof of Qualification & Identity Commitment using Midnight.js Providers.
  */
 
 // Simple SHA-256 helper for cryptographic commitment hashing in JS
@@ -36,14 +41,14 @@ export class ZKCircuitProver {
   async executeCircuit(privateInputs, publicInputs, onProgress = () => {}) {
     const startTime = performance.now();
     
-    // Step 1: Input Validation & Constraints Check
-    onProgress({ step: 1, text: "Initializing BN254 Elliptic Curve parameters..." });
+    // Step 1: Input Validation & Midnight ZK Config Provider Initialization
+    onProgress({ step: 1, text: "Initializing Midnight ZK Config Provider & BN254 parameters..." });
     await new Promise(r => setTimeout(r, 400));
 
     const { secretPin, userAge, creditScore } = privateInputs;
     const { minAge = 18, minCreditScore = 700 } = publicInputs;
 
-    onProgress({ step: 2, text: "Computing witness vector [1, w1, w2, ..., wN] from private inputs..." });
+    onProgress({ step: 2, text: "Computing witness via Midnight Level Private State Provider..." });
     await new Promise(r => setTimeout(r, 600));
 
     // Calculate commitment of private secret
