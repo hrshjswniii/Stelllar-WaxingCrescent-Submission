@@ -197,6 +197,37 @@ class LaceWalletService {
       return { success: true, wallet: this.connectedWallet };
     }
 
+    const midnightConnector = midnightSdk.detectDAppConnector();
+    if (midnightConnector && midnightConnector.id !== 'cardano-midnight' && midnightConnector.id !== 'lace') {
+      const midnightResult = await midnightSdk.connectWallet();
+      if (!midnightResult.success) return midnightResult;
+
+      const { api, connectorId } = midnightResult.session;
+      const configuration = await api.getConfiguration();
+      const addresses = typeof api.getUnshieldedAddress === 'function'
+        ? await api.getUnshieldedAddress()
+        : '';
+
+      this.api = api;
+      this.connectedWallet = {
+        name: midnightResult.connectorName,
+        icon: midnightConnector.provider.icon || '🌙',
+        apiVersion: midnightConnector.provider.apiVersion || '1.0.0',
+        address: addresses || 'Midnight address unavailable',
+        network: configuration.networkId || 'preprod',
+        networkId: configuration.networkId || 'preprod',
+        balanceAda: 0,
+        utxoCount: 0,
+        isMock: false,
+        connectorId,
+        midnightSdkConnected: true,
+        midnightStatus: midnightSdk.getStatus(),
+        configuration
+      };
+      this.notifyListeners();
+      return { success: true, wallet: this.connectedWallet };
+    }
+
     if (typeof window === 'undefined' || !window.cardano) {
       return { 
         success: false, 
