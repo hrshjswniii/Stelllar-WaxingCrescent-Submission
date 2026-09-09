@@ -42,7 +42,7 @@
 | **2. Lace Wallet Connect / Disconnect** | ✅ PASS | CIP-30 & Midnight DApp Connector API (`window.cardano.midnight` / `window.midnight`) with Bech32 address conversion & balance querying. |
 | **3. ZK Circuit Execution** | ✅ PASS | Client-side BN254 Groth16 witness calculation & proof matrix generation powered by Midnight private state provider. |
 | **4. Observable Privacy Behavior** | ✅ PASS | Proves eligibility (`Age ≥ 18`, `Credit Score ≥ 700`) while keeping secret PIN, age, and score private. |
-| **5. Deployed Preprod Contract** | ✅ PASS | Smart contract verifier deployed and verified on Cardano Preprod Testnet with Midnight Indexer inspection. |
+| **5. Deployed Preprod Contract** | ⚠️ VERIFY | Deployment metadata and explorer URL are included, but the address must be independently confirmed on Cardanoscan before submission. |
 | **6. Meaningful Step-by-Step Commits** | ✅ PASS | Atomic commit history documenting Midnight SDK modules, Lace connector UI, and smart contract configuration. |
 
 ---
@@ -56,6 +56,20 @@ Astraea leverages the official Midnight.js framework to manage local private sta
 - **Proof Server Provider (`@midnight-ntwrk/midnight-js-http-client-proof-provider`):** Submits ZK proof tasks to Midnight proof server `https://proof-server.preprod.midnight.network`.
 - **Level Private State Provider (`@midnight-ntwrk/midnight-js-level-private-state-provider`):** Persists local private states in browser IndexedDB/LocalStorage securely.
 - **ZK Config Provider (`@midnight-ntwrk/midnight-js-fetch-zk-config-provider`):** Fetches BN254 / Compact proving and verification parameters.
+
+The runtime connector path is `window.midnight.<walletId>.connect('preprod')`, as specified by
+`@midnight-ntwrk/dapp-connector-api`. Cardano `window.cardano` providers remain a separate CIP-30
+fallback. The application does not claim a wallet connection until the injected provider returns a
+connected session and its configuration.
+
+### Submission boundary
+
+The repository contains a frontend privacy demonstration and deployment metadata, but it does not
+contain a compiled validator script, a transaction CBOR builder, or a real proof-submission transaction.
+For that reason the UI deliberately does not fabricate transaction hashes or mark local proof output as
+`VERIFIED_ON_CHAIN`. To complete an on-chain demo, add the compiled validator artifact and transaction
+builder, then use the connected wallet's `balanceUnsealedTransaction` and `submitTransaction` methods
+before recording the returned transaction hash.
 
 ## 🔒 Privacy Claim Documentation (Observable Privacy Behavior)
 
