@@ -7,6 +7,7 @@ import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-p
 import { httpClientProofProvider } from '@midnight-ntwrk/midnight-js-http-client-proof-provider';
 import { levelPrivateStateProvider } from '@midnight-ntwrk/midnight-js-level-private-state-provider';
 import { FetchZkConfigProvider } from '@midnight-ntwrk/midnight-js-fetch-zk-config-provider';
+import { ErrorCodes } from '@midnight-ntwrk/dapp-connector-api';
 
 // Midnight Preprod Network Configuration
 export const MIDNIGHT_PREPROD_CONFIG = {
@@ -72,8 +73,13 @@ class MidnightSdkService {
   detectDAppConnector() {
     if (typeof window === 'undefined') return null;
 
-    if (window.midnight && window.midnight.mnLace) {
-      return { id: 'mnLace', provider: window.midnight.mnLace, name: 'Lace Midnight Connector' };
+    if (window.midnight) {
+      const connector = Object.entries(window.midnight).find(([, candidate]) => (
+        candidate && typeof candidate.connect === 'function'
+      ));
+      if (connector) {
+        return { id: connector[0], provider: connector[1], name: connector[1].name || 'Lace Midnight Connector' };
+      }
     }
     if (window.cardano && window.cardano.midnight) {
       return { id: 'cardano-midnight', provider: window.cardano.midnight, name: 'Lace Wallet (Midnight API)' };
@@ -100,7 +106,9 @@ class MidnightSdkService {
     }
 
     try {
-      const api = await connector.provider.enable();
+      const api = connector.id === 'cardano-midnight' || connector.id === 'lace'
+        ? await connector.provider.enable()
+        : await connector.provider.connect(MIDNIGHT_PREPROD_CONFIG.networkId);
       this.activeSession = {
         api,
         connectorId: connector.id,
@@ -115,7 +123,7 @@ class MidnightSdkService {
     } catch (err) {
       return {
         success: false,
-        error: err?.message || 'Failed to connect via Midnight DApp Connector API.'
+        error: err?.message || `Failed to connect via Midnight DApp Connector API (${ErrorCodes?.ConnectionFailed || 'connection error'}).`
       };
     }
   }
