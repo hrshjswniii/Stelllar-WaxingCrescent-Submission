@@ -22,16 +22,7 @@ export const PREPROD_CONTRACT_CONFIG = {
 
 class PreprodContractService {
   constructor() {
-    this.history = [
-      {
-        txHash: "tx_preprod_9a81f3c7e0123456789abcdef0123456789abcdef0123456789abcdef012",
-        blockNo: 3489210,
-        timestamp: new Date(Date.now() - 3600000).toISOString(),
-        proofId: "0x7f83a910bc012345",
-        status: "VERIFIED_ON_CHAIN",
-        feeAda: "0.1742"
-      }
-    ];
+    this.history = [];
   }
 
   getContractDetails() {
@@ -46,33 +37,11 @@ class PreprodContractService {
    * Submit ZK Proof to Preprod Smart Contract
    */
   async submitProofOnChain(proofResult, walletAddress) {
-    await new Promise(r => setTimeout(r, 1200));
-
-    const randomTxSuffix = Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
-    const txHash = `tx_preprod_${randomTxSuffix}`;
-    const blockNo = 3489500 + Math.floor(Math.random() * 100);
-
-    const record = {
-      txHash: txHash,
-      blockNo: blockNo,
-      timestamp: new Date().toISOString(),
-      proofId: proofResult.proofId || "0x99a1b2c3d4e5f678",
-      commitmentHash: proofResult.publicSignals ? proofResult.publicSignals[1] : "0x...",
-      submitter: walletAddress || PREPROD_CONTRACT_CONFIG.deployerAddress,
-      status: "VERIFIED_ON_CHAIN",
-      feeAda: "0.1824",
-      explorerUrl: `${PREPROD_CONTRACT_CONFIG.txExplorerPrefix}${txHash}`
-    };
-
-    this.history.unshift(record);
-
-    return {
-      success: true,
-      txHash: txHash,
-      blockNo: blockNo,
-      explorerUrl: record.explorerUrl,
-      record: record
-    };
+    void proofResult;
+    void walletAddress;
+    throw new Error(
+      'No transaction builder is configured for this validator. The app will not fabricate a transaction hash.'
+    );
   }
 
   /**

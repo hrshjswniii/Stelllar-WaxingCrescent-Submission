@@ -15,6 +15,7 @@ export default function CircuitRunner({ privateInputs, setPrivateInputs, onProof
 
   const [submittingOnChain, setSubmittingOnChain] = useState(false);
   const [onChainTx, setOnChainTx] = useState(null);
+  const [onChainError, setOnChainError] = useState(null);
 
   // Automatically compute target commitment whenever secretPin changes
   useEffect(() => {
@@ -32,6 +33,7 @@ export default function CircuitRunner({ privateInputs, setPrivateInputs, onProof
     setProofResult(null);
     setErrorMsg(null);
     setOnChainTx(null);
+    setOnChainError(null);
   };
 
   const runCircuit = async () => {
@@ -71,13 +73,18 @@ export default function CircuitRunner({ privateInputs, setPrivateInputs, onProof
   const submitToPreprodContract = async () => {
     if (!proofResult) return;
     setSubmittingOnChain(true);
+    setOnChainError(null);
 
-    const wallet = laceWalletService.getWalletInfo();
-    const address = wallet ? wallet.address : "addr_test1wz80h99a4z5p00w42a98f4z3s9g7x8y9z0a1b2c3d4e5f6";
-
-    const res = await preprodContractService.submitProofOnChain(proofResult, address);
-    setOnChainTx(res);
-    setSubmittingOnChain(false);
+    try {
+      const wallet = laceWalletService.getWalletInfo();
+      const address = wallet?.address;
+      const res = await preprodContractService.submitProofOnChain(proofResult, address);
+      setOnChainTx(res);
+    } catch (err) {
+      setOnChainError(err.message || 'Preprod submission is not configured.');
+    } finally {
+      setSubmittingOnChain(false);
+    }
   };
 
   return (
@@ -297,6 +304,12 @@ export default function CircuitRunner({ privateInputs, setPrivateInputs, onProof
               >
                 View on Cardanoscan Preprod Explorer &rarr;
               </a>
+            </div>
+          )}
+
+          {onChainError && (
+            <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200">
+              <strong>On-chain submission unavailable:</strong> {onChainError}
             </div>
           )}
 
